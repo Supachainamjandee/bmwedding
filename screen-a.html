@@ -19,9 +19,9 @@
     <div id="qr" role="img" aria-label="QR อัลบั้มคำอวยพร"></div>
     <span>สแกนดูอัลบั้ม<br>คำอวยพรบนมือถือ</span>
   </div>
-  <div class="foot">
+  <!-- ยกขึ้นพ้นแถบควบคุมของ Drive · ไม่แสดง #BMWedding บนหน้า เพราะติดในคลิปแล้ว (ข้อ 51) -->
+  <div class="foot" style="bottom:140px">
     <div class="pill" id="counter">คำอวยพรจากแขกในงาน</div>
-    <p class="display" style="margin:0;background:rgba(255,255,255,.9);color:var(--brand);padding:8px 18px;border-radius:14px;font-size:24px">#BMWedding</p>
   </div>
   <div class="start" id="start">
     <button class="btn lg" id="btnPlay" type="button">เริ่มฉาย (กดครั้งเดียว)</button>
@@ -53,11 +53,15 @@
     const pos = list.findIndex(x => x.id === it.id) + 1;
     $('counter').textContent = 'คำอวยพรจากแขกในงาน · ' + pos + ' / ' + list.length;
     // ทดลอง A: ใช้ตัวเล่นของ Drive (iframe) แทน <video> ที่โดน CORB บล็อก
-    // iframe บอกไม่ได้ว่าคลิปจบ -> ใช้ความยาวคลิป + 5 วิ เผื่อเวลาโหลด
-    $('vid').src = it.previewUrl + '?autoplay=1';
+    // ข้อ 52: แสดงคลิปละ SHOW_SEC วิ นับหลังตัวเล่น Drive โหลดเสร็จ (iframe load)
+    // ถ้าโหลดไม่เสร็จใน LOAD_MAX_SEC วิ -> ข้ามไปคลิปถัดไป
     clearTimeout(timer);
-    timer = setTimeout(next, ((Number(it.duration) || 60) + 5) * 1000);
+    const f = $('vid');
+    f.onload = () => { clearTimeout(timer); timer = setTimeout(next, SHOW_SEC * 1000); };
+    f.src = it.previewUrl + '?autoplay=1';
+    timer = setTimeout(next, LOAD_MAX_SEC * 1000);
   }
+  const SHOW_SEC = 5, LOAD_MAX_SEC = 20;
   let timer = 0;
 
   $('btnPlay').addEventListener('click', async () => {
