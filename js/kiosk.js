@@ -83,12 +83,17 @@
       const dw = vw * s, dh = vh * s;
       ctx.drawImage(v, (canvas.width - dw) / 2, (canvas.height - dh) / 2, dw, dh);
       // ป้ายมุมขวาล่าง
-      const bx = canvas.width - 250, by = canvas.height - 110;
+      // ข้อ 54: กว้างตามความยาวตัวอักษรจริง + ขอบ 18px ทั้งซ้ายขวา (เดิมตายตัว 220px ทำให้ # ล้น)
+      const F1 = '700 34px Mali, sans-serif', F2 = '600 22px "Noto Sans Thai", sans-serif', PAD = 18;
+      ctx.font = F1; const w1 = ctx.measureText(C.HASHTAG).width;
+      ctx.font = F2; const w2 = ctx.measureText(C.DATE_TEXT).width;
+      const bw = Math.ceil(Math.max(w1, w2)) + PAD * 2, right = canvas.width - 30;
+      const bx = right - bw, by = canvas.height - 110;
       ctx.fillStyle = 'rgba(255,255,255,0.88)';
-      roundRect(ctx, bx, by, 220, 80, 14); ctx.fill();
+      roundRect(ctx, bx, by, bw, 80, 14); ctx.fill();
       ctx.fillStyle = '#7A5A38'; ctx.textAlign = 'right';
-      ctx.font = '700 34px Mali, sans-serif'; ctx.fillText(C.HASHTAG, bx + 204, by + 40);
-      ctx.font = '600 22px "Noto Sans Thai", sans-serif'; ctx.fillText(C.DATE_TEXT, bx + 204, by + 68);
+      ctx.font = F1; ctx.fillText(C.HASHTAG, right - PAD, by + 40);
+      ctx.font = F2; ctx.fillText(C.DATE_TEXT, right - PAD, by + 68);
       drawRaf = requestAnimationFrame(draw);
     }
     draw();
