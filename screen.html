@@ -61,7 +61,7 @@
     f.src = it.previewUrl + '?autoplay=1';
     timer = setTimeout(next, LOAD_MAX_SEC * 1000);
   }
-  const SHOW_SEC = 5, LOAD_MAX_SEC = 20;
+  const SHOW_SEC = 10, LOAD_MAX_SEC = 20; // ข้อ 55: 10 วิ (เดิม 5)
   let timer = 0;
 
   $('btnPlay').addEventListener('click', async () => {
