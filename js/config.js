@@ -1,7 +1,7 @@
 // ค่าที่ต้องแก้ก่อนใช้งานจริง (ดู README ขั้น 2–3)
 window.APP_CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/PASTE_DEPLOYMENT_ID/exec', // URL ของ Apps Script web app
-  SITE_URL: 'https://USERNAME.github.io/bmwedding',                       // URL เว็บนี้ ไม่มี / ท้าย
+  API_URL: 'https://script.google.com/macros/s/AKfycbzccQHw2znxYuljfzL5fXyoy3DlPufuTrJvMLBqXuwK_0riWElpOn5gdcQiZY4pFr0c/exec', // URL ของ Apps Script web app
+  SITE_URL: 'https://supachainamjandee.github.io/bmwedding',                       // URL เว็บนี้ ไม่มี / ท้าย
   MAP_URL: '',               // ลิงก์แผนที่ (ข้อ 36) ว่างไว้ = ปุ่มแผนที่ขึ้นว่า "รอลิงก์แผนที่"
   MAX_SEC: 60,               // ข้อ 2
   COUNTDOWN_SEC: 3,          // ข้อ 6
