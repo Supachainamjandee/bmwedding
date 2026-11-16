@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>จอใหญ่ — BEN ♥ MEGH</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="big">
+  <video id="vid" playsinline></video>
+  <div id="empty" class="hidden" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;background:var(--bg)">
+    <img src="img/illustration.jpg" alt="" style="width:320px;height:320px;border-radius:50%;object-fit:cover;border:8px solid #fff">
+    <p class="display" style="font-size:40px;margin:0">ฝากคำอวยพรได้ที่บูธ iPad</p>
+  </div>
+  <div class="logo">BEN ♥ MEGH</div>
+  <div class="qr">
+    <div id="qr" role="img" aria-label="QR อัลบั้มคำอวยพร"></div>
+    <span>สแกนดูอัลบั้ม<br>คำอวยพรบนมือถือ</span>
+  </div>
+  <div class="foot">
+    <div class="pill" id="counter">คำอวยพรจากแขกในงาน</div>
+    <p class="display" style="margin:0;background:rgba(255,255,255,.9);color:var(--brand);padding:8px 18px;border-radius:14px;font-size:24px">#BMWedding</p>
+  </div>
+  <div class="start" id="start">
+    <button class="btn lg" id="btnPlay" type="button">เริ่มฉาย (กดครั้งเดียว)</button>
+  </div>
+</div>
+<script src="vendor/qrcode.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  $('qr').innerHTML = App.qrSvg(App.albumUrl(), 5);
+  let list = [], idx = 0, seen = new Set(), fresh = [];
+
+  async function refresh() {
+    try {
+      const r = await App.apiGet({ action: 'slides' });
+      if (!r.ok) return;
+      r.items.forEach(it => { if (!seen.has(it.id) && list.length) fresh.push(it); seen.add(it.id); });
+      list = r.items.slice().reverse(); // เก่าก่อน ใหม่ทีหลัง
+      if (!list.length) $('empty').classList.remove('hidden');
+    } catch (e) { /* เน็ตสะดุด ลองรอบหน้า */ }
+  }
+
+  function next() {
+    if (!list.length) { setTimeout(next, 10000); return; }
+    $('empty').classList.add('hidden');
+    const it = fresh.length ? fresh.shift() : list[idx++ % list.length]; // คลิปใหม่แทรกคิวก่อน
+    const pos = list.findIndex(x => x.id === it.id) + 1;
+    $('counter').textContent = 'คำอวยพรจากแขกในงาน · ' + pos + ' / ' + list.length;
+    const v = $('vid');
+    v.src = it.downloadUrl;
+    v.play().catch(() => setTimeout(next, 2000));
+  }
+  $('vid').addEventListener('ended', next);
+  $('vid').addEventListener('error', () => setTimeout(next, 2000)); // เล่นไม่ได้ -> ข้ามคลิป
+
+  $('btnPlay').addEventListener('click', async () => {
+    $('start').classList.add('hidden');
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+    await refresh();
+    next();
+    setInterval(refresh, 60000);
+  });
+})();
+</script>
+</body>
+</html>

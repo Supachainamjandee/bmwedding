@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>แอดมิน — BEN ♥ MEGH</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="mobile">
+  <!-- A1 -->
+  <section id="a1" style="display:flex;flex-direction:column;gap:24px;padding-top:12vh">
+    <header>
+      <p class="display brand">BEN ♥ MEGH</p>
+      <h1 style="margin:8px 0 0;font-size:22px">คลังคำอวยพร (แอดมิน)</h1>
+      <p class="muted" style="margin:6px 0 0">สำหรับบ่าวสาวและผู้จัดทำแอปเท่านั้น</p>
+    </header>
+    <form id="login" class="card" style="display:flex;flex-direction:column;gap:14px">
+      <label for="pin" style="font-weight:600">รหัส PIN</label>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" required>
+      <button class="btn" type="submit">เข้าสู่ระบบ</button>
+      <p class="muted" id="loginErr" style="margin:0"></p>
+    </form>
+  </section>
+
+  <!-- A2 -->
+  <section id="a2" class="hidden" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <p class="display brand" style="margin:0;font-size:26px">BEN ♥ MEGH</p>
+      <button class="btn outline" id="logout" type="button" style="padding:8px 16px">ออกจากระบบ</button>
+    </div>
+    <h1 style="margin:0;font-size:24px">คลังคำอวยพร</h1>
+    <p class="muted" id="summary" style="margin:0"></p>
+    <a class="btn" id="folderBtn" target="_blank" rel="noopener">ดาวน์โหลดทั้งหมด (เปิดโฟลเดอร์ Drive)</a>
+    <div class="grid2">
+      <a class="btn outline" id="folderBtn2" target="_blank" rel="noopener">เปิดโฟลเดอร์ Drive</a>
+      <a class="btn outline" id="sheetBtn" target="_blank" rel="noopener">เปิด Google Sheet</a>
+    </div>
+    <div id="list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </section>
+</main>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const LABEL = { ready: ['พร้อมดู', 'var(--sage)'], hidden: ['ซ่อนอยู่', '#E3E6EC'], pending: ['ยังไม่มีไฟล์ / กำลังอัปโหลด', 'var(--yellow)'] };
+  let pin = sessionStorage.getItem('pin') || '';
+
+  async function call(op, id) {
+    return App.apiPost({ action: 'admin', pin, op, id });
+  }
+
+  async function load() {
+    const r = await call('list');
+    if (!r.ok) {
+      sessionStorage.removeItem('pin');
+      $('a2').classList.add('hidden'); $('a1').classList.remove('hidden');
+      $('loginErr').textContent = r.error === 'locked' ? 'ใส่ PIN ผิดหลายครั้ง รอ 10 นาที' : 'PIN ไม่ถูกต้อง';
+      return;
+    }
+    sessionStorage.setItem('pin', pin);
+    $('a1').classList.add('hidden'); $('a2').classList.remove('hidden');
+    ['folderBtn', 'folderBtn2'].forEach(b => $(b).href = r.folderUrl);
+    $('sheetBtn').href = r.sheetUrl;
+    const pend = r.items.filter(i => i.status === 'pending').length;
+    $('summary').textContent = 'ทั้งหมด ' + r.items.length + ' รายการ · ยังไม่มีไฟล์ ' + pend;
+    const list = $('list'); list.innerHTML = '';
+    r.items.forEach(it => {
+      const [txt, bg] = LABEL[it.status];
+      const when = it.createdAt ? new Date(it.createdAt).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '';
+      const badge = App.el('span', { text: txt, style: 'align-self:flex-start;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px;background:' + bg });
+      const actions = App.el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' });
+      if (it.status !== 'pending') {
+        actions.appendChild(App.el('button', { class: 'btn outline', type: 'button', style: 'padding:6px 14px',
+          text: it.status === 'hidden' ? 'แสดง' : 'ซ่อน',
+          onclick: async () => { await call(it.status === 'hidden' ? 'unhide' : 'hide', it.id); load(); } }));
+        actions.appendChild(App.el('a', { class: 'btn outline', style: 'padding:6px 14px', href: it.downloadUrl, target: '_blank', rel: 'noopener', text: 'ดาวน์โหลด' }));
+        actions.appendChild(App.el('a', { class: 'btn outline', style: 'padding:6px 14px', href: it.viewUrl, target: '_blank', rel: 'noopener', text: 'ดู' }));
+      }
+      actions.appendChild(App.el('button', { class: 'btn outline', type: 'button', style: 'padding:6px 14px;color:#A3322F;border-color:#A3322F', text: 'ลบ',
+        onclick: async () => { if (confirm('ลบคลิปนี้? ไฟล์จะไปอยู่ในถังขยะ Drive (กู้คืนได้ 30 วัน)')) { await call('delete', it.id); load(); } } }));
+      const body = App.el('div', { style: 'display:flex;flex-direction:column;gap:6px' }, [
+        App.el('p', { style: 'margin:0;font-weight:600', text: when + (it.duration ? ' · ' + App.fmtTime(it.duration) : '') }),
+        badge
+      ]);
+      body.appendChild(actions);
+      list.appendChild(App.el('div', { class: 'card', style: 'padding:14px' }, [body]));
+    });
+  }
+
+  $('login').addEventListener('submit', e => { e.preventDefault(); pin = $('pin').value; load(); });
+  $('logout').addEventListener('click', () => { sessionStorage.removeItem('pin'); location.reload(); });
+  if (pin) load();
+})();
+</script>
+</body>
+</html>

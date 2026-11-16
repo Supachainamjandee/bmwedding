@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>อัลบั้มคำอวยพร — BEN ♥ MEGH</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="mobile">
+  <header style="display:flex;flex-direction:column;align-items:center;gap:10px">
+    <img src="img/illustration.jpg" alt="ภาพการ์ตูนบ่าวสาว" style="width:140px;height:140px;border-radius:50%;object-fit:cover;border:5px solid #fff">
+    <p class="display brand">BEN ♥ MEGH</p>
+    <p class="muted" style="margin:0;font-size:15px">เบญจวรรณ โนภิชัย &amp; พิทักษ์ ตลับนิล</p>
+    <p class="muted" style="margin:0;font-size:14px">#BMWedding · 04.12.26</p>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>อัลบั้มคำอวยพร</h2>
+    <p class="muted" id="albumState" style="margin:0">กำลังโหลด…</p>
+    <div class="grid2" id="grid"></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>ภาพพรีเวดดิ้ง</h2>
+    <div class="grid3">
+      <img src="img/pre1.jpg" alt="รูปพรีเวดดิ้ง"><img src="img/pre2.jpg" alt="รูปพรีเวดดิ้ง">
+      <img src="img/pre3.jpg" alt="รูปพรีเวดดิ้ง" style="object-position:top"><img src="img/pre4.jpg" alt="รูปแหวน">
+      <img src="img/pre5.jpg" alt="รูปขาวดำ">
+    </div>
+  </section>
+
+  <section class="card" style="display:flex;flex-direction:column;gap:12px">
+    <h2>กำหนดการ</h2>
+    <p class="muted" style="margin:0">วันศุกร์ที่ 4 ธันวาคม 2569</p>
+    <div class="row"><b>08.29</b><span>พิธีแห่ขันหมาก</span></div>
+    <div class="row"><b>09.00</b><span>พิธีบายศรีสู่ขวัญ</span></div>
+    <div class="row"><b>10.00</b><span>ร่วมถ่ายภาพ</span></div>
+    <div class="row"><b>11.00</b><span>รับประทานอาหาร</span></div>
+  </section>
+
+  <section class="card" style="display:flex;flex-direction:column;gap:12px">
+    <h2>สถานที่</h2>
+    <p style="margin:0;line-height:1.6">บ้านเลขที่ 114 หมู่ 7 ต.แม่กัวะ<br>อ.สบปราบ จ.ลำปาง</p>
+    <a class="btn" id="mapBtn" target="_blank" rel="noopener">เปิดแผนที่</a>
+  </section>
+</main>
+
+<div class="modal hidden" id="modal" role="dialog" aria-modal="true" aria-label="เล่นคำอวยพร">
+  <div class="inner">
+    <div class="ratio"><iframe id="modalPlayer" allow="autoplay" allowfullscreen title="คลิปคำอวยพร"></iframe></div>
+    <p id="modalMsg" class="msg" style="color:#fff;font-size:16px"></p>
+    <button class="btn outline" id="modalClose" type="button">ปิด</button>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  const C = window.APP_CONFIG, $ = id => document.getElementById(id);
+  if (C.MAP_URL) $('mapBtn').href = C.MAP_URL;
+  else { $('mapBtn').removeAttribute('href'); $('mapBtn').textContent = 'รอลิงก์แผนที่'; $('mapBtn').classList.add('outline'); }
+
+  function open(item) {
+    $('modalPlayer').src = item.previewUrl;
+    $('modalMsg').textContent = item.message || '';
+    $('modal').classList.remove('hidden');
+  }
+  $('modalClose').addEventListener('click', () => { $('modalPlayer').src = 'about:blank'; $('modal').classList.add('hidden'); });
+
+  async function load() {
+    try {
+      const r = await App.apiGet({ action: 'album' });
+      if (!r.ok) { $('albumState').textContent = r.error === 'expired' ? 'อัลบั้มปิดแล้ว ขอบคุณที่ร่วมอวยพรนะคะ' : 'โหลดอัลบั้มไม่ได้'; return; }
+      $('albumState').textContent = r.items.length ? ('ทั้งหมด ' + r.items.length + ' คลิป') : 'ยังไม่มีคลิป';
+      const grid = $('grid'); grid.innerHTML = '';
+      r.items.forEach((it, i) => {
+        const tile = App.el('button', { class: 'tile', type: 'button', 'aria-label': 'เล่นคำอวยพร', onclick: () => open(it) }, [
+          App.el('span', { text: App.fmtTime(it.duration) })
+        ]);
+        tile.style.backgroundImage = 'url("' + it.thumbUrl + '")';
+        tile.insertAdjacentHTML('afterbegin', '<svg width="28" height="28" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>');
+        const wrap = App.el('div', {}, [tile]);
+        if (it.message) wrap.appendChild(App.el('p', { class: 'msg', text: it.message }));
+        grid.appendChild(wrap);
+      });
+    } catch (e) { $('albumState').textContent = 'โหลดอัลบั้มไม่ได้ ลองโหลดหน้าใหม่'; }
+  }
+  load();
+})();
+</script>
+</body>
+</html>

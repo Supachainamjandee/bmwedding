@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>BEN ♥ MEGH — บูธอวยพร</title>
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="kiosk">
+
+  <!-- K1 ต้อนรับ -->
+  <section id="k1" class="screen k1">
+    <div class="main">
+      <img class="art" src="img/illustration.jpg" alt="ภาพการ์ตูนบ่าวสาว">
+      <div>
+        <h1 class="display brand" id="logo">BEN ♥ MEGH</h1>
+        <p class="names muted">เบญจวรรณ โนภิชัย &amp; พิทักษ์ ตลับนิล</p>
+        <p class="date muted">วันศุกร์ที่ 4 ธันวาคม 2569</p>
+        <p class="lead display" style="font-weight:500">ฝากคำอวยพรเป็นวิดีโอ<br>ให้บ่าวสาวกันนะ</p>
+        <button class="btn lg" id="btnStart" type="button">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+          แตะเพื่ออวยพร
+        </button>
+        <p class="muted" style="font-size:16px;margin:14px 0 0">ยกหูโทรศัพท์แล้วพูดได้เลย · อัดได้ไม่เกิน 1 นาที</p>
+      </div>
+    </div>
+    <div class="foot">
+      <div class="thumbs" id="thumbs">
+        <img src="img/pre1.jpg" alt="" class="on"><img src="img/pre2.jpg" alt=""><img src="img/pre3.jpg" alt="">
+        <img src="img/pre4.jpg" alt=""><img src="img/pre5.jpg" alt="">
+      </div>
+      <div style="text-align:right">
+        <p class="display brand" style="margin:0;font-size:26px">#BMWedding</p>
+        <p class="muted" style="margin:6px 0 0;font-size:15px">คลิปของคุณจะอยู่ในอัลบั้มของบ่าวสาวและแขกในงาน</p>
+      </div>
+    </div>
+    <div class="queue-badge" id="queueBadge"></div>
+  </section>
+
+  <!-- K3 เตรียมกล้อง -->
+  <section id="k3" class="screen split hidden">
+    <div class="cam-wrap">
+      <video id="previewK3" class="mirror" autoplay muted playsinline></video>
+      <div class="face-guide"></div>
+      <div class="pill" style="position:absolute;top:24px;left:24px">จัดหน้าให้อยู่ในกรอบ</div>
+    </div>
+    <div class="side">
+      <div style="display:flex;flex-direction:column;gap:28px">
+        <p class="display brand" style="margin:0;font-size:26px">BEN ♥ MEGH</p>
+        <h2 style="font-size:40px">พร้อมอวยพรแล้ว</h2>
+        <div class="steps">
+          <div class="step"><i style="background:var(--pink)">1</i>ยกหูโทรศัพท์สีแดง</div>
+          <div class="step"><i style="background:var(--yellow)">2</i>มองกล้องด้านบนจอ</div>
+          <div class="step"><i style="background:var(--blue)">3</i>กดเริ่ม นับ 3 วิ แล้วพูดได้เลย</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <button class="btn lg" id="btnRecord" type="button"><span class="dot"></span>เริ่มอัด</button>
+        <button class="btn outline" id="btnBack" type="button">ย้อนกลับ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- K4 นับถอยหลัง / กำลังอัด -->
+  <section id="k4" class="screen k4 hidden">
+    <video id="previewK4" class="mirror" autoplay muted playsinline></video>
+    <div class="top">
+      <div class="pill" id="recLabel"><span class="dot"></span> กำลังบันทึก</div>
+      <div class="pill" id="recTime">0:00 / 1:00</div>
+    </div>
+    <div class="tag" style="right:32px;bottom:120px"><b>#BMWedding</b><small>04.12.26</small></div>
+    <div class="count" id="countBox"><b id="countNum">3</b><p style="font-size:24px">ยกหูโทรศัพท์ แล้วมองกล้อง</p></div>
+    <div class="bottom">
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+        <div class="bar"><div id="recBar"></div></div>
+        <p style="margin:0;color:#fff">พูดใส่หูโทรศัพท์ได้เลย · หยุดเองเมื่อครบ 1 นาที</p>
+      </div>
+      <button class="btn outline" id="btnStop" type="button"><span class="dot" style="border-radius:4px"></span>จบการอวยพร</button>
+    </div>
+  </section>
+
+  <!-- K5 ดูย้อนหลัง -->
+  <section id="k5" class="screen split hidden">
+    <div class="cam-wrap"><video id="review" playsinline controls></video></div>
+    <div class="side">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p class="display brand" style="margin:0;font-size:26px">BEN ♥ MEGH</p>
+        <h2 style="font-size:40px">ดูคำอวยพร<br>ของคุณ</h2>
+        <p style="font-size:20px;margin:0">ถ้าพอใจแล้ว กดส่งให้บ่าวสาวได้เลย</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <button class="btn lg" id="btnSend" type="button">ส่งคำอวยพร</button>
+        <button class="btn outline" id="btnRetake" type="button">อัดใหม่ (ได้อีก 1 ครั้ง)</button>
+        <p class="muted hidden" id="retakeUsed" style="text-align:center;margin:0">ใช้สิทธิ์อัดใหม่ไปแล้ว</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- K6 บันทึกแล้ว -->
+  <section id="k6" class="screen center hidden">
+    <img src="img/illustration.jpg" alt="" style="width:220px;height:220px;border-radius:50%;object-fit:cover;border:6px solid #fff">
+    <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#5B4330" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-6.5"/></svg>
+    <h1 class="display" style="font-size:52px;margin:0">บันทึกคำอวยพรแล้ว</h1>
+  </section>
+
+  <!-- K7 ขอบคุณ + QR -->
+  <section id="k7" class="screen k7 hidden">
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px">
+      <p class="display brand" style="margin:0;font-size:28px">BEN ♥ MEGH</p>
+      <h1 class="display" style="margin:0;font-size:64px;line-height:1.15">ขอบคุณสำหรับ<br>คำอวยพรนะคะ</h1>
+      <p id="k7Online" style="font-size:26px;line-height:1.5;margin:0">สแกน QR เพื่อดูคลิปของคุณ<br>และอัลบั้มคำอวยพรของทุกคน</p>
+      <div id="k7Offline" class="hidden">
+        <p style="font-size:26px;line-height:1.5;margin:0">คลิปของคุณบันทึกไว้แล้ว<br>จะขึ้นในอัลบั้มเมื่อส่งสำเร็จ</p>
+        <p class="muted" style="font-size:18px;margin:8px 0 0">สแกน QR เพื่อเปิดอัลบั้มคำอวยพร</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:16px">
+        <button class="btn" id="btnDone" type="button" style="font-size:22px">เสร็จแล้ว</button>
+        <p class="muted" style="font-size:18px;margin:0">กลับหน้าแรกใน <span id="k7Sec">15</span> วินาที</p>
+      </div>
+    </div>
+    <div class="qr-box">
+      <div id="qr" role="img" aria-label="QR โค้ด"></div>
+      <p class="display brand" style="margin:0;font-size:22px">#BMWedding</p>
+      <p style="margin:0;font-weight:600;font-size:18px" id="qrLabel">คลิปของคุณ + อัลบั้มรวม</p>
+    </div>
+  </section>
+
+  <!-- ตั้งค่าเครื่อง: เปิดด้วย index.html?setup -->
+  <div class="setup hidden" id="setup">
+    <div class="card">
+      <h2>ตั้งค่าบูธ</h2>
+      <label for="micSel">ไมโครโฟน (เลือกหูโทรศัพท์)</label>
+      <select id="micSel"></select>
+      <label for="camSel">กล้อง</label>
+      <select id="camSel"></select>
+      <p class="muted" id="setupInfo" style="margin:0;font-size:14px"></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="btnTestRec" type="button">ทดสอบอัด 5 วิ</button>
+        <button class="btn outline" id="btnSaveSetup" type="button">บันทึกและปิด</button>
+      </div>
+      <video id="setupPreview" class="mirror hidden" autoplay muted playsinline style="width:100%;border-radius:12px"></video>
+      <video id="testPlay" playsinline controls class="hidden" style="width:100%;border-radius:12px"></video>
+    </div>
+  </div>
+
+</div>
+<script src="vendor/qrcode.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/queue.js"></script>
+<script src="js/kiosk.js"></script>
+</body>
+</html>

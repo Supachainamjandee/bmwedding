@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คำอวยพรของคุณ — BEN ♥ MEGH</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="mobile">
+  <header>
+    <p class="display brand">BEN ♥ MEGH</p>
+    <p class="muted" style="margin:4px 0 0;font-size:14px">#BMWedding · 04.12.26</p>
+  </header>
+  <h1 class="display" style="margin:0;font-size:26px;text-align:center">คำอวยพรของคุณ</h1>
+
+  <div id="loading" class="card" style="text-align:center">กำลังโหลด…</div>
+
+  <div id="ready" class="hidden" style="display:flex;flex-direction:column;gap:12px">
+    <div class="ratio"><iframe id="player" allow="autoplay" allowfullscreen title="คลิปคำอวยพร"></iframe></div>
+    <p class="muted" style="margin:0;font-size:13px">ถ้าขึ้นว่าวิดีโอกำลังประมวลผล รอสักครู่แล้วโหลดหน้าใหม่</p>
+    <a class="btn" id="download" target="_blank" rel="noopener">ดาวน์โหลดคลิป</a>
+  </div>
+
+  <div id="pending" class="card hidden" style="text-align:center">
+    <p style="margin:0;font-size:18px;font-weight:600">คลิปกำลังอัปโหลด</p>
+    <p class="muted" style="margin:8px 0 0">หน้านี้จะลองใหม่เองทุก 15 วินาที</p>
+  </div>
+
+  <div id="unavailable" class="card hidden" style="text-align:center">คลิปนี้ไม่ได้แสดงแล้ว</div>
+  <div id="expired" class="card hidden" style="text-align:center">อัลบั้มปิดแล้ว ขอบคุณที่ร่วมอวยพรนะคะ</div>
+  <div id="error" class="card hidden" style="text-align:center">เปิดคลิปไม่ได้ ลองโหลดหน้าใหม่อีกครั้ง</div>
+
+  <form id="msgForm" class="card hidden" style="display:flex;flex-direction:column;gap:10px">
+    <label for="wish" class="display brand" style="font-size:20px">เขียนคำอวยพรถึงบ่าวสาว</label>
+    <p class="muted" style="margin:0;font-size:14px">ไม่บังคับ · แสดงคู่กับคลิปของคุณในอัลบั้ม ไม่ขึ้นบนจอใหญ่</p>
+    <textarea id="wish" rows="4" maxlength="500" placeholder="พิมพ์คำอวยพรที่นี่"></textarea>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <span class="muted" id="msgState" style="font-size:14px"></span>
+      <button class="btn" type="submit" id="msgSave">บันทึกคำอวยพร</button>
+    </div>
+  </form>
+
+  <a class="btn outline" href="album.html">ดูอัลบั้มคำอวยพรทั้งหมด</a>
+  <p class="muted" style="margin:0;font-size:13px;text-align:center">ลิงก์นี้เปิดได้ถึง 1 เดือนหลังงาน</p>
+</main>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const token = new URLSearchParams(location.search).get('t') || '';
+  const boxes = ['loading', 'ready', 'pending', 'unavailable', 'expired', 'error'];
+  let retry = null, filled = false;
+  function only(id) { boxes.forEach(b => $(b).classList.toggle('hidden', b !== id)); }
+
+  async function load() {
+    try {
+      const r = await App.apiGet({ action: 'clip', t: token });
+      if (!r.ok) { only(r.error === 'expired' ? 'expired' : 'error'); $('msgForm').classList.add('hidden'); return; }
+      $('msgForm').classList.remove('hidden');
+      if (!filled) { $('wish').value = r.message || ''; filled = true; }
+      if (r.status === 'ready') {
+        clearInterval(retry);
+        if ($('player').src !== r.previewUrl) $('player').src = r.previewUrl;
+        $('download').href = r.downloadUrl;
+        only('ready');
+      } else if (r.status === 'hidden') {
+        clearInterval(retry); only('unavailable');
+      } else {
+        only('pending');
+        if (!retry) retry = setInterval(load, 15000);
+      }
+    } catch (e) { only('error'); }
+  }
+
+  $('msgForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('msgSave').disabled = true; $('msgState').textContent = 'กำลังบันทึก…';
+    try {
+      const r = await App.apiPost({ action: 'message', token, text: $('wish').value });
+      $('msgState').textContent = r.ok ? 'บันทึกแล้ว' : (r.error === 'expired' ? 'อัลบั้มปิดแล้ว' : 'บันทึกไม่สำเร็จ ลองอีกครั้ง');
+    } catch (err) { $('msgState').textContent = 'บันทึกไม่สำเร็จ ลองอีกครั้ง'; }
+    $('msgSave').disabled = false;
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>
