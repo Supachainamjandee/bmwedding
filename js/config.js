@@ -2,7 +2,7 @@
 window.APP_CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbzccQHw2znxYuljfzL5fXyoy3DlPufuTrJvMLBqXuwK_0riWElpOn5gdcQiZY4pFr0c/exec', // URL ของ Apps Script web app
   SITE_URL: 'https://supachainamjandee.github.io/bmwedding',                       // URL เว็บนี้ ไม่มี / ท้าย
-  MAP_URL: '',               // ลิงก์แผนที่ (ข้อ 36) ว่างไว้ = ปุ่มแผนที่ขึ้นว่า "รอลิงก์แผนที่"
+  MAP_URL: 'https://maps.app.goo.gl/2BXURZNuEPL3kS5f7?g_st=ic',               // ลิงก์แผนที่ (ข้อ 36) ว่างไว้ = ปุ่มแผนที่ขึ้นว่า "รอลิงก์แผนที่"
   MAX_SEC: 60,               // ข้อ 2
   COUNTDOWN_SEC: 3,          // ข้อ 6
   RETAKES: 1,                // ข้อ 3
