@@ -42,6 +42,13 @@
     </div>
   </form>
 
+  <!-- ข้อ 66: หลังปิดรับคำอวยพร แสดงคำอวยพรแบบอ่านอย่างเดียว -->
+  <div id="closed" class="card hidden" style="display:flex;flex-direction:column;gap:8px;text-align:center">
+    <p class="display brand" style="margin:0;font-size:20px">คำอวยพรของคุณ</p>
+    <p id="closedText" style="margin:0;white-space:pre-line;word-break:break-word"></p>
+    <p class="muted" style="margin:0;font-size:14px">ปิดรับการเขียน/แก้คำอวยพรแล้ว ขอบคุณที่ร่วมอวยพรนะคะ</p>
+  </div>
+
   <!-- ข้อ 59: หลังบันทึกสำเร็จ แทนที่ฟอร์มด้วยข้อความขอบคุณ -->
   <div id="thanks" class="card hidden" style="display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center">
     <div class="brand" style="font-size:40px;line-height:1">♥</div>
@@ -51,7 +58,7 @@
   </div>
 
   <a class="btn outline" href="album.html">ดูอัลบั้มคำอวยพรทั้งหมด</a>
-  <p class="muted" style="margin:0;font-size:13px;text-align:center">ลิงก์นี้เปิดได้ถึง 1 เดือนหลังงาน</p>
+  <p class="muted" style="margin:0;font-size:13px;text-align:center">ดูคลิปได้ตลอด · เขียน/แก้คำอวยพรได้ถึง 1 เดือนหลังงาน</p>
 </main>
 <script src="js/config.js"></script>
 <script src="js/common.js"></script>
@@ -67,7 +74,12 @@
     try {
       const r = await App.apiGet({ action: 'clip', t: token });
       if (!r.ok) { only(r.error === 'expired' ? 'expired' : 'error'); $('msgForm').classList.add('hidden'); return; }
-      if (!thanked) $('msgForm').classList.remove('hidden');
+      if (r.editable === false) { // ข้อ 66
+        $('msgForm').classList.add('hidden'); $('thanks').classList.add('hidden');
+        const m = String(r.message || '').trim();
+        $('closedText').textContent = m ? '“' + m + '”' : 'ไม่ได้เขียนคำอวยพรไว้';
+        $('closed').classList.remove('hidden');
+      } else if (!thanked) $('msgForm').classList.remove('hidden');
       if (!filled) { $('wish').value = r.message || ''; filled = true; }
       if (r.status === 'ready') {
         clearInterval(retry);
