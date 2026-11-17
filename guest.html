@@ -42,6 +42,14 @@
     </div>
   </form>
 
+  <!-- ข้อ 59: หลังบันทึกสำเร็จ แทนที่ฟอร์มด้วยข้อความขอบคุณ -->
+  <div id="thanks" class="card hidden" style="display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center">
+    <div class="brand" style="font-size:40px;line-height:1">♥</div>
+    <p class="display brand" style="margin:0;font-size:20px">บันทึกแล้ว คำอวยพรจะขึ้นในอัลบั้มและจอใหญ่ในงาน</p>
+    <p id="thanksText" style="margin:0;white-space:pre-line;word-break:break-word"></p>
+    <button class="btn outline" type="button" id="editWish">แก้ไขคำอวยพร</button>
+  </div>
+
   <a class="btn outline" href="album.html">ดูอัลบั้มคำอวยพรทั้งหมด</a>
   <p class="muted" style="margin:0;font-size:13px;text-align:center">ลิงก์นี้เปิดได้ถึง 1 เดือนหลังงาน</p>
 </main>
@@ -52,14 +60,14 @@
   const $ = id => document.getElementById(id);
   const token = new URLSearchParams(location.search).get('t') || '';
   const boxes = ['loading', 'ready', 'pending', 'unavailable', 'expired', 'error'];
-  let retry = null, filled = false;
+  let retry = null, filled = false, thanked = false;
   function only(id) { boxes.forEach(b => $(b).classList.toggle('hidden', b !== id)); }
 
   async function load() {
     try {
       const r = await App.apiGet({ action: 'clip', t: token });
       if (!r.ok) { only(r.error === 'expired' ? 'expired' : 'error'); $('msgForm').classList.add('hidden'); return; }
-      $('msgForm').classList.remove('hidden');
+      if (!thanked) $('msgForm').classList.remove('hidden');
       if (!filled) { $('wish').value = r.message || ''; filled = true; }
       if (r.status === 'ready') {
         clearInterval(retry);
@@ -80,9 +88,18 @@
     $('msgSave').disabled = true; $('msgState').textContent = 'กำลังบันทึก…';
     try {
       const r = await App.apiPost({ action: 'message', token, text: $('wish').value });
-      $('msgState').textContent = r.ok ? 'บันทึกแล้ว' : (r.error === 'expired' ? 'อัลบั้มปิดแล้ว' : 'บันทึกไม่สำเร็จ ลองอีกครั้ง');
+      $('msgState').textContent = r.ok ? '' : (r.error === 'expired' ? 'อัลบั้มปิดแล้ว' : 'บันทึกไม่สำเร็จ ลองอีกครั้ง');
+      if (r.ok) {
+        const t = $('wish').value.trim();
+        $('thanksText').textContent = t ? '“' + t + '”' : '';
+        thanked = true; $('msgForm').classList.add('hidden'); $('thanks').classList.remove('hidden');
+      }
     } catch (err) { $('msgState').textContent = 'บันทึกไม่สำเร็จ ลองอีกครั้ง'; }
     $('msgSave').disabled = false;
+  });
+
+  $('editWish').addEventListener('click', () => {
+    thanked = false; $('thanks').classList.add('hidden'); $('msgForm').classList.remove('hidden'); $('wish').focus();
   });
 
   load();

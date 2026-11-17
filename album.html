@@ -27,7 +27,7 @@
     <div class="grid3">
       <img src="img/pre1.jpg" alt="รูปพรีเวดดิ้ง"><img src="img/pre2.jpg" alt="รูปพรีเวดดิ้ง">
       <img src="img/pre3.jpg" alt="รูปพรีเวดดิ้ง" style="object-position:top"><img src="img/pre4.jpg" alt="รูปแหวน">
-      <img src="img/pre5.jpg" alt="รูปขาวดำ">
+      <img src="img/pre5.jpg" alt="รูปขาวดำ"><img src="img/pre6.jpg" alt="รูปชุดไทย" style="object-position:top">
     </div>
   </section>
 
@@ -51,6 +51,7 @@
   <div class="inner">
     <div class="ratio"><iframe id="modalPlayer" allow="autoplay" allowfullscreen title="คลิปคำอวยพร"></iframe></div>
     <p id="modalMsg" class="msg" style="color:#fff;font-size:16px"></p>
+    <a class="btn" id="modalEdit" href="#">แก้ไข/เพิ่มคำอวยพร</a>
     <button class="btn outline" id="modalClose" type="button">ปิด</button>
   </div>
 </div>
@@ -66,6 +67,8 @@
   function open(item) {
     $('modalPlayer').src = item.previewUrl;
     $('modalMsg').textContent = item.message || '';
+    // ข้อ 60: ไปหน้าแขกของคลิปนี้เพื่อแก้ไข/เพิ่มคำอวยพร
+    $('modalEdit').href = App.guestUrl(item.token); $('modalEdit').classList.toggle('hidden', !item.token);
     $('modal').classList.remove('hidden');
   }
   $('modalClose').addEventListener('click', () => { $('modalPlayer').src = 'about:blank'; $('modal').classList.add('hidden'); });
