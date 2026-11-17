@@ -19,6 +19,8 @@
     <div id="qr" role="img" aria-label="QR อัลบั้มคำอวยพร"></div>
     <span>สแกนดูอัลบั้ม<br>คำอวยพรบนมือถือ</span>
   </div>
+  <!-- ข้อ 57: คำอวยพรแบบซับไตเติล กลางจอด้านล่าง เหนือแผงควบคุม Drive สูงสุด 3 บรรทัด -->
+  <div id="msg" class="hidden" style="position:absolute;left:50%;transform:translateX(-50%);bottom:140px;max-width:56%;background:rgba(0,0,0,.6);color:#fff;padding:12px 24px;border-radius:16px;font-size:30px;line-height:1.45;font-weight:600;text-align:center;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line"></div>
   <!-- ยกขึ้นพ้นแถบควบคุมของ Drive · ไม่แสดง #BMWedding บนหน้า เพราะติดในคลิปแล้ว (ข้อ 51) -->
   <div class="foot" style="bottom:140px">
     <div class="pill" id="counter">คำอวยพรจากแขกในงาน</div>
@@ -52,6 +54,8 @@
     const it = fresh.length ? fresh.shift() : list[idx++ % list.length]; // คลิปใหม่แทรกคิวก่อน
     const pos = list.findIndex(x => x.id === it.id) + 1;
     $('counter').textContent = 'คำอวยพรจากแขกในงาน · ' + pos + ' / ' + list.length;
+    const m = String(it.message || '').trim();
+    $('msg').textContent = m; $('msg').classList.toggle('hidden', !m);
     // ข้อ 51: ใช้ตัวเล่นของ Drive (iframe) แทน <video> ที่โดน CORB บล็อก — ใช้บน Safari
     // ข้อ 52: แสดงคลิปละ SHOW_SEC วิ นับหลังตัวเล่น Drive โหลดเสร็จ (iframe load)
     // ถ้าโหลดไม่เสร็จใน LOAD_MAX_SEC วิ -> ข้ามไปคลิปถัดไป
