@@ -10,7 +10,7 @@ window.APP_CONFIG = {
   BACK_HOME_SEC: 15,         // K7 กลับหน้าแรก (ปรับได้)
   IDLE_RESET_SEC: 90,        // ไม่มีคนแตะจอที่ K3/K5 นานเท่านี้ -> กลับ K1
   OVERLAY_IN_VIDEO: true,    // ข้อ 38: #BMWedding + 04.12.26 ติดในไฟล์ (false = อัดจากกล้องตรง ไม่มีตัวอักษร)
-  VIDEO_BITRATE: 2300000,    // ~19 MB/นาที เผื่อไม่ให้ไฟล์เกินขีดจำกัด Apps Script
+  VIDEO_BITRATE: 2000000,    // ~19 MB/นาที เผื่อไม่ให้ไฟล์เกินขีดจำกัด Apps Script
   HASHTAG: '#BMWedding',
   DATE_TEXT: '04.12.26'
 };
