@@ -39,6 +39,10 @@
       <a class="btn outline" id="sheetBtn" target="_blank" rel="noopener">เปิด Google Sheet</a>
     </div>
     <div id="list" style="display:flex;flex-direction:column;gap:10px"></div>
+    <!-- ข้อ 70: รูปจากแขก -->
+    <h2 style="margin:12px 0 0;font-size:22px">รูปจากแขก</h2>
+    <p class="muted" id="photoSummary" style="margin:0"></p>
+    <div id="photoList" style="display:flex;flex-direction:column;gap:10px"></div>
   </section>
 </main>
 <script src="js/config.js"></script>
@@ -64,6 +68,7 @@
     sessionStorage.setItem('pin', pin);
     $('a1').classList.add('hidden'); $('a2').classList.remove('hidden');
     ['folderBtn', 'folderBtn2'].forEach(b => $(b).href = r.folderUrl);
+    loadPhotos(); // ข้อ 70
     $('sheetBtn').href = r.sheetUrl;
     const pend = r.items.filter(i => i.status === 'pending').length;
     $('summary').textContent = 'ทั้งหมด ' + r.items.length + ' รายการ · ยังไม่มีไฟล์ ' + pend;
@@ -95,6 +100,36 @@
             [App.el('img', { src: 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w320', alt: 'ตัวอย่างคลิป', loading: 'lazy', style: 'width:100%;height:100%;object-fit:cover;display:block' })])
         : App.el('div', { style: 'flex:0 0 160px;height:90px;border-radius:10px;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:13px', text: 'ยังไม่มีไฟล์' });
       body.style.flex = '1'; body.style.minWidth = '0';
+      list.appendChild(App.el('div', { class: 'card', style: 'padding:14px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap' }, [thumb, body]));
+    });
+  }
+
+  // ---------- ข้อ 70: รูปจากแขก ----------
+  async function loadPhotos() {
+    const r = await App.apiPost({ action: 'admin', pin, op: 'photo_list' });
+    if (!r.ok) { $('photoSummary').textContent = 'โหลดรูปไม่ได้'; return; }
+    $('photoSummary').textContent = 'ทั้งหมด ' + r.items.length + ' รูป · ซ่อนอยู่ ' + r.items.filter(i => i.hidden).length;
+    const list = $('photoList'); list.innerHTML = '';
+    r.items.forEach(it => {
+      const op = (o, extra) => App.apiPost(Object.assign({ action: 'admin', pin, op: o, id: it.id }, extra || {}));
+      const when = it.createdAt ? new Date(it.createdAt).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '';
+      const cap = App.el('input', { type: 'text', maxlength: '100', 'aria-label': 'คำบรรยายรูป', style: 'min-height:44px;padding:6px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;width:100%;box-sizing:border-box' });
+      cap.value = it.caption;
+      const actions = App.el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' }, [
+        App.el('button', { class: 'btn outline', type: 'button', style: 'padding:6px 14px', text: 'บันทึกคำบรรยาย',
+          onclick: async () => { await op('photo_caption', { caption: cap.value }); loadPhotos(); } }),
+        App.el('button', { class: 'btn outline', type: 'button', style: 'padding:6px 14px', text: it.hidden ? 'แสดง' : 'ซ่อน',
+          onclick: async () => { await op(it.hidden ? 'photo_unhide' : 'photo_hide'); loadPhotos(); } }),
+        App.el('button', { class: 'btn outline', type: 'button', style: 'padding:6px 14px;color:#A3322F;border-color:#A3322F', text: 'ลบ',
+          onclick: async () => { if (confirm('ลบรูปนี้? ไฟล์จะไปอยู่ในถังขยะ Drive (กู้คืนได้ 30 วัน) และเครื่องนั้นจะส่งรูปใหม่ไม่ได้')) { await op('photo_delete'); loadPhotos(); } } })
+      ]);
+      const body = App.el('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:6px' }, [
+        App.el('p', { style: 'margin:0;font-weight:600', text: when }),
+        App.el('span', { text: it.hidden ? 'ซ่อนอยู่' : 'แสดงอยู่', style: 'align-self:flex-start;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px;background:' + (it.hidden ? '#E3E6EC' : 'var(--sage)') }),
+        cap, actions
+      ]);
+      const thumb = App.el('a', { href: it.viewUrl, target: '_blank', rel: 'noopener', style: 'flex:0 0 120px;height:120px;border-radius:10px;overflow:hidden;background:#ddd;display:block' },
+        [App.el('img', { src: it.thumbUrl, alt: 'รูปจากแขก', loading: 'lazy', style: 'width:100%;height:100%;object-fit:cover;display:block' })]);
       list.appendChild(App.el('div', { class: 'card', style: 'padding:14px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap' }, [thumb, body]));
     });
   }

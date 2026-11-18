@@ -22,6 +22,26 @@
     <div class="grid2" id="grid"></div>
   </section>
 
+  <!-- ข้อ 70: อัลบั้มรูปจากแขก (คนละ 1 รูป 1 ครั้ง ต่อเครื่อง) -->
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>อัลบั้มรูปจากแขก</h2>
+    <p class="muted" id="photoState" style="margin:0">กำลังโหลด…</p>
+    <form id="photoForm" class="card hidden" style="display:flex;flex-direction:column;gap:10px">
+      <label for="photoFile" class="display brand" style="font-size:18px">ส่งรูปของคุณ (ได้ 1 รูป)</label>
+      <input id="photoFile" type="file" accept="image/*">
+      <img id="photoPreview" alt="ตัวอย่างรูปที่เลือก" class="hidden" style="width:100%;max-height:320px;object-fit:contain;border-radius:12px;background:#fff">
+      <label for="photoCaption" class="muted" style="font-size:14px">คำบรรยาย (ไม่บังคับ)</label>
+      <input id="photoCaption" type="text" maxlength="100" placeholder="เช่น ยินดีด้วยนะ" style="min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;font:inherit">
+      <p class="muted" style="margin:0;font-size:13px">ส่งแล้วแก้ไขหรือส่งรูปใหม่ไม่ได้</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <span class="muted" id="photoMsg" style="font-size:14px"></span>
+        <button class="btn" type="submit" id="photoSend" disabled>ส่งรูป</button>
+      </div>
+    </form>
+    <p id="photoDone" class="card hidden" style="margin:0;text-align:center">♥ ส่งรูปแล้ว ขอบคุณที่ร่วมแบ่งปันความทรงจำนะคะ</p>
+    <div class="grid3" id="photoGrid"></div>
+  </section>
+
   <section style="display:flex;flex-direction:column;gap:12px">
     <h2>ภาพพรีเวดดิ้ง</h2>
     <div class="grid3">
@@ -51,6 +71,7 @@
   <div class="inner">
     <div class="ratio"><iframe id="modalPlayer" allow="autoplay" allowfullscreen title="คลิปคำอวยพร"></iframe></div>
     <p id="modalMsg" class="msg" style="color:#fff;font-size:16px"></p>
+    <a class="btn outline" id="modalFull" href="#" target="_blank" rel="noopener">ดูเต็มจอ</a>
     <a class="btn" id="modalEdit" href="#">แก้ไข/เพิ่มคำอวยพร</a>
     <button class="btn outline" id="modalClose" type="button">ปิด</button>
   </div>
@@ -67,6 +88,7 @@
   function open(item) {
     $('modalPlayer').src = item.previewUrl;
     $('modalMsg').textContent = item.message || '';
+    $('modalFull').href = String(item.previewUrl).replace(/\/preview$/, '/view'); // ข้อ 69: เปิดในหน้า Drive เต็มจอ
     // ข้อ 60: ไปหน้าแขกของคลิปนี้เพื่อแก้ไข/เพิ่มคำอวยพร
     $('modalEdit').href = App.guestUrl(item.token); $('modalEdit').classList.toggle('hidden', !item.token);
     $('modal').classList.remove('hidden');
@@ -92,6 +114,85 @@
     } catch (e) { $('albumState').textContent = 'โหลดอัลบั้มไม่ได้ ลองโหลดหน้าใหม่'; }
   }
   load();
+
+  // ---------- ข้อ 70: รูปจากแขก ----------
+  function deviceId() { // รหัสเครื่องสุ่ม เก็บในเบราว์เซอร์ (ไม่ใช่ข้อมูลส่วนตัว)
+    try {
+      let d = localStorage.getItem('bm_device');
+      if (!d) { d = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2)); localStorage.setItem('bm_device', d); }
+      return d;
+    } catch (e) { return ''; }
+  }
+  const DEV = deviceId();
+  let photoBlob = null;
+
+  function showDone() { $('photoForm').classList.add('hidden'); $('photoDone').classList.remove('hidden'); }
+
+  async function loadPhotos() {
+    try {
+      const r = await App.apiGet({ action: 'photos', d: DEV });
+      if (!r.ok) { $('photoState').textContent = 'โหลดรูปไม่ได้'; return; }
+      $('photoState').textContent = r.items.length ? ('ทั้งหมด ' + r.items.length + ' รูป') : 'ยังไม่มีรูป ส่งรูปแรกได้เลย';
+      if (r.mine) showDone();
+      else if (r.editable && DEV) $('photoForm').classList.remove('hidden');
+      const g = $('photoGrid'); g.innerHTML = '';
+      r.items.forEach(it => {
+        const a = App.el('a', { href: it.viewUrl, target: '_blank', rel: 'noopener', style: 'display:flex;flex-direction:column;gap:4px;color:inherit;text-decoration:none' }, [
+          App.el('img', { src: it.thumbUrl, alt: it.caption || 'รูปจากแขก', loading: 'lazy' })
+        ]);
+        if (it.caption) a.appendChild(App.el('span', { class: 'muted', style: 'font-size:13px;word-break:break-word', text: it.caption }));
+        g.appendChild(a);
+      });
+    } catch (e) { $('photoState').textContent = 'โหลดรูปไม่ได้ ลองโหลดหน้าใหม่'; }
+  }
+
+  // ย่อด้านยาวเหลือ 2048 px แล้วเป็น JPEG (ผู้ใช้เลือกในข้อ 70)
+  function shrink(file) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, 2048 / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(b => b ? res(b) : rej(new Error('encode')), 'image/jpeg', 0.85);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('decode')); };
+      img.src = url;
+    });
+  }
+  function toB64(blob) {
+    return new Promise((res, rej) => { const fr = new FileReader();
+      fr.onload = () => { const s = String(fr.result); res(s.slice(s.indexOf('base64,') + 7)); };
+      fr.onerror = () => rej(fr.error); fr.readAsDataURL(blob); });
+  }
+
+  $('photoFile').addEventListener('change', async () => {
+    const f = $('photoFile').files[0]; photoBlob = null; $('photoSend').disabled = true;
+    if (!f) return;
+    $('photoMsg').textContent = 'กำลังเตรียมรูป…';
+    try {
+      photoBlob = await shrink(f);
+      $('photoPreview').src = URL.createObjectURL(photoBlob); $('photoPreview').classList.remove('hidden');
+      $('photoMsg').textContent = ''; $('photoSend').disabled = false;
+    } catch (e) { $('photoMsg').textContent = 'เปิดรูปนี้ไม่ได้ ลองเลือกรูปอื่น'; }
+  });
+
+  $('photoForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!photoBlob) return;
+    $('photoSend').disabled = true; $('photoMsg').textContent = 'กำลังส่ง…';
+    try {
+      const r = await App.apiPost({ action: 'photo', device: DEV, mime: 'image/jpeg',
+        caption: $('photoCaption').value, data: await toB64(photoBlob) });
+      if (r.ok || r.error === 'already') { showDone(); loadPhotos(); return; }
+      $('photoMsg').textContent = r.error === 'expired' ? 'ปิดรับรูปแล้ว' : 'ส่งไม่สำเร็จ ลองอีกครั้ง';
+    } catch (err) { $('photoMsg').textContent = 'ส่งไม่สำเร็จ ลองอีกครั้ง'; }
+    $('photoSend').disabled = false;
+  });
+
+  loadPhotos();
 })();
 </script>
 </body>
