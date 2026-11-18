@@ -38,7 +38,7 @@
         <button class="btn" type="submit" id="photoSend" disabled>ส่งรูป</button>
       </div>
     </form>
-    <p id="photoDone" class="card hidden" style="margin:0;text-align:center">♥ ส่งรูปแล้ว ขอบคุณที่ร่วมแบ่งปันความทรงจำนะคะ</p>
+    <p id="photoDone" class="card hidden" style="margin:0;text-align:center;line-height:1.6"><b class="brand">♥ ส่งรูปแล้ว</b><br>ขอบคุณที่ร่วมแบ่งปันความทรงจำนะคะ</p>
     <div class="grid3" id="photoGrid"></div>
   </section>
 
@@ -133,7 +133,7 @@
       const r = await App.apiGet({ action: 'photos', d: DEV });
       if (!r.ok) { $('photoState').textContent = 'โหลดรูปไม่ได้'; return; }
       $('photoState').textContent = r.items.length ? ('ทั้งหมด ' + r.items.length + ' รูป') : 'ยังไม่มีรูป ส่งรูปแรกได้เลย';
-      if (r.mine) showDone();
+      if (r.mine) $('photoForm').classList.add('hidden'); // ข้อ 71: ส่งแล้ว -> ไม่มีฟอร์ม ไม่มีกล่อง (กล่องขึ้นเฉพาะตอนส่งเสร็จ)
       else if (r.editable && DEV) $('photoForm').classList.remove('hidden');
       const g = $('photoGrid'); g.innerHTML = '';
       r.items.forEach(it => {
